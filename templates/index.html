@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card metric-card bg-primary-subtle border-primary-subtle">
+      <div class="card-body">
+        <h6>Total de atualizações</h6>
+        <h2>{{ stats.total }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card metric-card bg-success-subtle border-success-subtle">
+      <div class="card-body">
+        <h6>Ativas</h6>
+        <h2>{{ stats.active }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card metric-card bg-secondary-subtle border-secondary-subtle">
+      <div class="card-body">
+        <h6>Descontinuadas</h6>
+        <h2>{{ stats.discontinued }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Palavras-chave (IA)</h5>
+        <p class="text-muted small">A coleta automática seleciona conteúdos fiscais com base nessas palavras.</p>
+
+        <form action="{{ url_for('add_keyword') }}" method="post" class="d-flex gap-2 mb-3">
+          <input class="form-control" type="text" name="value" placeholder="Ex.: PIS/COFINS" />
+          <button class="btn btn-dark" type="submit">Adicionar</button>
+        </form>
+
+        <div class="d-flex flex-wrap gap-2">
+          {% for keyword in keywords %}
+            <form action="{{ url_for('delete_keyword', keyword_id=keyword.id) }}" method="post">
+              <button class="badge rounded-pill text-bg-light border keyword-pill" title="Remover">
+                {{ keyword.value }} ✕
+              </button>
+            </form>
+          {% else %}
+            <span class="text-muted">Sem palavras-chave cadastradas.</span>
+          {% endfor %}
+        </div>
+
+        <form action="{{ url_for('trigger_collect') }}" method="post" class="mt-4">
+          <button class="btn btn-primary w-100">Executar Coleta Automática Agora</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title mb-0">Atualizações Fiscais</h5>
+          <small class="text-muted">Últimos 100 registros</small>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Fonte</th>
+                <th>IA Score</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in updates %}
+              <tr>
+                <td>
+                  <a href="{{ item.url }}" target="_blank" class="link-dark text-decoration-none fw-semibold">{{ item.title }}</a>
+                  <div class="small text-muted">{{ item.keyword_hits }}</div>
+                </td>
+                <td>{{ item.source }}</td>
+                <td><span class="badge text-bg-info">{{ item.relevance_score }}</span></td>
+                <td>
+                  {% if item.status == 'ativo' %}
+                    <span class="badge text-bg-success">Ativo</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary">Descontinuado</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if item.status == 'ativo' %}
+                    <form action="{{ url_for('toggle_status', update_id=item.id) }}" method="post">
+                      <input type="hidden" name="status" value="descontinuado" />
+                      <button class="btn btn-sm btn-outline-secondary">Descontinuar</button>
+                    </form>
+                  {% else %}
+                    <form action="{{ url_for('toggle_status', update_id=item.id) }}" method="post">
+                      <input type="hidden" name="status" value="ativo" />
+                      <button class="btn btn-sm btn-outline-success">Reativar</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">Nenhuma atualização coletada ainda.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

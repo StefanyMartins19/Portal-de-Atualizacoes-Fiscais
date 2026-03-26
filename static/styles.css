@@ -1,0 +1,18 @@
+body {
+  background: linear-gradient(180deg, #f7f9fc 0%, #edf2f9 100%);
+}
+
+.metric-card {
+  border-width: 2px;
+}
+
+.keyword-pill {
+  border: 1px solid #dce3ef;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
